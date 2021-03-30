@@ -9,7 +9,6 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///main.db'
 app.secret_key = 'hUYF/khi+uGilH1'
 db = SQLAlchemy(app)
-currentUser = ""
 
 class User(db.Model):
     user_id = db.Column(db.Integer,primary_key = True)
@@ -29,8 +28,6 @@ class User(db.Model):
 
 def WriteUserToDb(records):
     for record in records:
-        
-
         user = User(record["user_id"],record["name"],record["email"],record["password"],record["usertype"])
         db.session.add(user)
         db.session.commit()
@@ -77,8 +74,8 @@ def index():
         db.create_all()
         initdb()
     #DisplayUserFromDb()#testing
-    return redirect('/login')#
-    return render_template('index.html',records=[records])#dictionaries can't be passed
+    return redirect('/login')
+    #return render_template('index.html',records=[records])#dictionaries can't be passed
     
 @app.route('/login',methods=['POST','GET'])   
 def login(): 
