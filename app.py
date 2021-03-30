@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, redirect, request, session
 from flask_sqlalchemy import SQLAlchemy
 import csv
 from numpy import genfromtxt
+from pathlib import Path
 
 
 app = Flask(__name__)
@@ -41,10 +42,7 @@ def DisplayUserFromDb():
     except: 
         app.logger.info("select query Failed")
         
-
-@app.route('/',methods=['POST','GET'])   
-def index():
-    
+def initdb():
     with open("datasets/userdata.csv") as user_csv:
         data = csv.reader(user_csv, delimiter=',')
         first_line = True
@@ -66,8 +64,20 @@ def index():
             
             
     WriteUserToDb(records)
-    DisplayUserFromDb()#testing
-    #return redirect('/login')#
+
+@app.route('/',methods=['POST','GET'])   
+def index():
+    #Creating Database
+    my_file = Path("main.db")
+    if my_file.is_file():
+        # file exists
+        app.logger.info("db exists")
+    else:
+        app.logger.info("Initializing db...")
+        db.create_all()
+        initdb()
+    #DisplayUserFromDb()#testing
+    return redirect('/login')#
     return render_template('index.html',records=[records])#dictionaries can't be passed
     
 @app.route('/login',methods=['POST','GET'])   
@@ -144,9 +154,6 @@ def signup():
     return render_template('register.html', error = " ")
     
 if __name__ == "__main__":
-
-    #Creating Database
-    db.create_all()
     app.run(debug=True)
  
 
