@@ -9,19 +9,46 @@
 <div class ="userdata">
     <h1>Test</h1>
     <form action="{{ url_for('student_response') }}" method="POST">
-       <label for="selectedquestion">Choose a question:</label>
-        <select name="selectedquestion" id="selectedquestion">
+       <!-- <label for="selectedquestion">Choose a question:</label>
+        <select name="selectedquestion" id="selectedquestion"> -->
             {% for question in questions %}
                 {% for q in question %}
-                    <option>{{q["questionTitle"]}}</option>
+                    <input type="hidden" id="selectedquestion" name="selectedquestion" value = "{{q["questionTitle"]}}">
+                    <p style="display: inline;">{{q["questionTitle"]}}</p>
+                    <!-- MCQ -->
+                    {% if q["questionType"] == 0 %}
+                        <br><br>
+                        {% set x = q["options"].split(',') %}
+                        {% for i in x %}
+                            <input type="radio" id="option" name="option" value="{{i}}">
+                            <label for="option">{{i}}</label><br>
+                        {% endfor %}
+                        <br><br>
+                    {% endif %}
+                    <!-- Fill in the blanks -->
+                    {% if q["questionType"] == 1 %}
+                        <p style="display: inline;">____________</p>
+                        <br>
+                        <label for="fillanswer">Enter your answer:</label><br>
+                        <input type="text" id="fillanswer" name="fillanswer">
+                        <br><br>
+                    {% endif %}
+                    <!-- Match the following -->
+                    {% if q["questionType"] == 2 %}
+                        <p>Match the following</p>
+                    {% endif %}
+                    <!-- Descriptive -->
+                    {% if q["questionType"] == 3 %}
+                        <br>
+                        <input type="text" id="descanswer" name="descanswer"><br>
+                        <br><br>
+                    {% endif %}
                 {% endfor %}
             {% endfor %}
-        </select>
-        <br><br>
+       <!--  </select> -->
+        <br>
         
-        <label for="studentanswer">Enter your answer:</label><br>
-        <input type="text" id="studentanswer" name="studentanswer"><br>
-        <br><br>
+       
         <input type="submit" value="Submit">
       </form>
       <!--  {% for question in questions %}

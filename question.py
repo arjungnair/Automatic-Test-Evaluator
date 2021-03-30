@@ -4,6 +4,7 @@ import csv
 import evaluator
 from numpy import genfromtxt
 from pathlib import Path
+import random
 
 
 question = Flask(__name__)
@@ -32,12 +33,14 @@ def WriteQToDb(records):
         db.session.add(question)
         db.session.commit()
 
-def ExtractFromDb():
-        questions = Question.query.all()
-        try:
-            return questions
-        except: 
-            question.logger.info("ExtractFromDb(): question extraction from db Failed")
+def ExtractFromDb(question_list):
+    questions = []
+    for q in question_list:
+        questions.append(Question.query.filter_by(question_id = q).first())
+    try:
+        return questions
+    except: 
+        question.logger.info("ExtractFromDb(): question extraction from db Failed")
 
 def evaluatemarks(questionanswer):
     return evaluator.evaluate(questionanswer)
@@ -66,23 +69,57 @@ def initdb():
 
 @question.route('/student_response',methods=['POST','GET']) 
 def student_response():
+    score = 0
+    max_score = 0
+    dcount = 0
+    mcqcount = 0
+    fillcount = 0
     try:
+        #Getting form data from question.html
         selected_question = request.form.getlist('selectedquestion')
-        response = request.form.getlist('studentanswer')
-        response.append(selected_question[0])
-        question.logger.info(response)
-        q = Question.query.filter_by(questionTitle = selected_question[0]).first()
-        response.append(q.referenceAnswer)
-        try:
-            markObtained = round(evaluatemarks(response)*q.marks,2) #executes function in evaluator.py and returns marks
-            response.append(markObtained)
-        except:
-            question.logger.info("evaluation error")
-        question.logger.info(response)
-        question.logger.info(markObtained)
+        descanswer = request.form.getlist('descanswer')
+        option = request.form.getlist("option")
+        fillanswer = request.form.getlist("fillanswer")
+        for i in range(0,len(selected_question)):
+            q = Question.query.filter_by(questionTitle = selected_question[i]).first()
+            if q.questionType == 0:#MCQ
+                if option[mcqcount] == q.referenceAnswer:
+                    score = score + q.marks
+                max_score = max_score + q.marks
+                question.logger.info(option[mcqcount])
+                question.logger.info(score)
+                mcqcount = mcqcount + 1
+            elif q.questionType == 1:#Fill in the blanks
+                if fillanswer[fillcount] == q.referenceAnswer:
+                    score = score + q.marks
+                max_score = max_score + q.marks
+                question.logger.info(fillanswer[fillcount])
+                question.logger.info(score)
+                fillcount = fillcount + 1
+            elif q.questionType == 2:#Match the following
+                pass
+
+            else:#Descriptive
+                
+                response = []
+                response.append(descanswer[dcount])
+                response.append(selected_question[i])
+                response.append(q.referenceAnswer)
+                question.logger.info(response)
+                try:
+                    markObtained = round(evaluatemarks(response)*q.marks,0) #executes function in evaluator.py and returns marks
+                    score = score + markObtained
+                    max_score = max_score + q.marks
+                    dcount = dcount + 1
+                except:
+                    question.logger.info("descriptive answer evaluation error")
+                question.logger.info(score)
     except:
         question.logger.info("Failed to submit data")
-    return render_template('display.html',response = [response])#Page after answer submission
+    result = []
+    result.append(score)
+    result.append(max_score)
+    return render_template('display.html',response = [result])#Page after answer submission
 
 @question.route('/',methods=['POST','GET'])   
 def index():
@@ -96,7 +133,20 @@ def index():
         db.create_all()
         initdb() #creates db,initializes values
 
-    questions = ExtractFromDb()
+    #Below code for generating random list of question ids
+    """     
+        randomlist = []
+        no_of_questions = 5
+        for i in range(0,no_of_questions):
+            n = random.randint(1001,1001+len(questions))
+            if n in randomlist:
+                continue
+            else:
+                randomlist.append(n)
+        question.logger.info(randomlist) """
+    question_list = [1006,1036,1037,1021]
+    questions = ExtractFromDb(question_list)
+    #question.logger.info(questions)
     return render_template('question.html',questions = [questions])#dictionaries can't be passed, during init change questions var to records= [records]
 if __name__ == "__main__":
     question.run(debug=True)
