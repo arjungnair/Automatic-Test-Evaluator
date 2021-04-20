@@ -79,6 +79,7 @@ def student_response():
         selected_question = request.form.getlist('selectedquestion')
         descanswer = request.form.getlist('descanswer')
         option = request.form.getlist("option")
+        matchans = request.form.getlist("matchans")
         fillanswer = request.form.getlist("fillanswer")
         for i in range(0,len(selected_question)):
             q = Question.query.filter_by(questionTitle = selected_question[i]).first()
@@ -97,7 +98,15 @@ def student_response():
                 question.logger.info(score)
                 fillcount = fillcount + 1
             elif q.questionType == 2:#Match the following
-                pass
+                m = []
+                for i in q.referenceAnswer:
+                    if i != ',':
+                        m.append(i)
+                if matchans == m:
+                    score = score + q.marks
+                max_score = max_score + q.marks
+                question.logger.info(m)
+                question.logger.info(score)
 
             else:#Descriptive
                 
@@ -134,19 +143,20 @@ def index():
         initdb() #creates db,initializes values
 
     #Below code for generating random list of question ids
-    """     
-        randomlist = []
-        no_of_questions = 5
-        for i in range(0,no_of_questions):
-            n = random.randint(1001,1001+len(questions))
-            if n in randomlist:
-                continue
-            else:
-                randomlist.append(n)
-        question.logger.info(randomlist) """
-    question_list = [1006,1036,1037,1021]
+    """ q = Question.query.all()
+    question_list = []
+    no_of_questions = 5
+    for i in range(0,no_of_questions):
+        n = random.randint(1001,1001+len(q) - 1)
+        if n in question_list:
+            i = i - 1
+            continue
+        else:
+            question_list.append(n)
+ """
+    question_list = [1007,1036,1037,1021,1038]
     questions = ExtractFromDb(question_list)
-    #question.logger.info(questions)
+    #question.logger.info(question_list)
     return render_template('question.html',questions = [questions])#dictionaries can't be passed, during init change questions var to records= [records]
 if __name__ == "__main__":
     question.run(debug=True)

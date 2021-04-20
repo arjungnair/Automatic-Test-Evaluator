@@ -14,9 +14,9 @@
             {% for question in questions %}
                 {% for q in question %}
                     <input type="hidden" id="selectedquestion" name="selectedquestion" value = "{{q["questionTitle"]}}">
-                    <p style="display: inline;">{{q["questionTitle"]}}</p>
                     <!-- MCQ -->
                     {% if q["questionType"] == 0 %}
+                        <p style="display: inline;">{{q["questionTitle"]}}</p>
                         <br><br>
                         {% set x = q["options"].split(',') %}
                         {% for i in x %}
@@ -27,6 +27,7 @@
                     {% endif %}
                     <!-- Fill in the blanks -->
                     {% if q["questionType"] == 1 %}
+                        <p style="display: inline;">{{q["questionTitle"]}}</p>
                         <p style="display: inline;">____________</p>
                         <br>
                         <label for="fillanswer">Enter your answer:</label><br>
@@ -35,10 +36,22 @@
                     {% endif %}
                     <!-- Match the following -->
                     {% if q["questionType"] == 2 %}
-                        <p>Match the following</p>
+                        <p>Match the following</p><br><br>
+                        {% set x = q["questionTitle"].split(',') %}
+                        {% set y = q["options"].split(',') %}
+                        {% set len = x|length %}
+                        <input type="hidden" id="matchmark" name="matchmark" value = "{{len}}">
+                        {% for i in range(len) %}
+                            <p style="display: inline;">{{i + 1}}. </p>
+                            <p style="display: inline-block; width: 300px;">{{x[i]}}</p>
+                            <input type="text" id="matchans" name="matchans" size ="1">
+                            <p style="display: inline-block; width: 100px;">{{y[i]}}</p>
+                            <br><br>
+                        {% endfor %}
                     {% endif %}
                     <!-- Descriptive -->
                     {% if q["questionType"] == 3 %}
+                        <p style="display: inline;">{{q["questionTitle"]}}</p>
                         <br>
                         <input type="text" id="descanswer" name="descanswer"><br>
                         <br><br>

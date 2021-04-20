@@ -1,5 +1,6 @@
 import string
 import nltk
+import random
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -36,10 +37,6 @@ def sentence_polarity(text1, text2):
     return polarity
 
 def matched_keywords(text1,text2):
-    text1 = preprocess(text1)
-    text2 = preprocess(text2)
-    print(text1)
-    print(text2)
     n = 0
     for w1 in text1:
         for w2 in text2:
@@ -57,9 +54,23 @@ def preprocess(text):
     return text
 
 #print(preprocess("He was studying for the exam very rigourously, but he still couldn't pass the exam"))
-print(matched_keywords("i hate the exam", "i did not like the exam"))
 """ referenceAnswer = "Smog is a mixture of smoke and fog"
 qwlist = ['Smog','eggs']
 for w in qwlist:
     referenceAnswer = referenceAnswer.replace(w,'')
 print(referenceAnswer) """
+""" X = preprocess("Biological Oxygen Demand (BOD) is the amount of oxygen present in water for sustaining life under water.")
+Y = preprocess("BOD of a sample of water is defined as the amount of dissolved oxygen required for the oxidation of organic matter by aquatic micro-organisms under aerobic conditions at 241C for a period of 5 days.")
+print(X)
+print(Y)
+match = matched_keywords(Y,X)
+print(match) """
+randomlist = []
+no_of_questions = 5
+for i in range(0,no_of_questions):
+    n = random.randint(1001,1001+35)
+    if n in randomlist:
+        continue
+    else:
+        randomlist.append(n)
+print(randomlist)

@@ -58,8 +58,9 @@ def matched_keywords(text1,text2):
         for w2 in text2:
             if w1 == w2:
                 n = n + 1
-    match = n/len(text1) #text1 is reference answer
+    match = n/len(text1) #assume text1 is reference answer
     return match
+
 
 #Converts list of words in text to vectors and calculates cosine between vectors
 def cosine_sim(X,Y): 
@@ -97,7 +98,7 @@ def evaluate(qapair):
     X = preprocess(referenceAnswer)  
     Y = preprocess(studentAnswer)
     match = 1
-    match = matched_keywords(X,Y)
+    match = 1 - matched_keywords(X,Y)
     if match == 0:
         cosine = 0
     else:
