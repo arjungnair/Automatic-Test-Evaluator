@@ -9,7 +9,20 @@
 <div class ="userdata">
     <h1>Result</h1>
     {% for r in response %}
-        <p>Score: {{r[0]}} / {{r[1]}}</p>
+    <!--r[0]: set of questions
+        r[1]: set of reference answers
+        r[2]: set of student answers
+        r[3]: set of scores
+        r[4]: max score-->
+        {% set score = r[3] | sum() %}
+        <h3>Score: {{score}} / {{r[4]}}</h3>
+        {% set len = r[3]|length %}
+        {% for i in range(len) %}
+            <p>{{i+1}}. {{r[0][i]}}</p>
+            <p>Your Answer: {{r[2][i]}}</p>
+            <p>Correct Answer: {{r[1][i]}}</p>
+            <p>Score: {{r[3][i]}}</p>
+        {% endfor %}
     {% endfor %}
 </div>
 {% endblock %}

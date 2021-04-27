@@ -45,6 +45,18 @@ def ExtractFromDb(question_list):
 def evaluatemarks(questionanswer):
     return evaluator.evaluate(questionanswer)
 
+def generateQuestions(no_of_questions):
+    q = Question.query.all()
+    question_list = []
+    for i in range(0,no_of_questions):
+        n = random.randint(1001,1001+len(q) - 1)
+        if n in question_list:
+            i = i - 1
+            continue
+        else:
+            question_list.append(n)
+    return question_list
+
 def initdb():
     with open("datasets/DatasetFinalcsv.csv") as user_csv:
         data = csv.reader(user_csv, delimiter=',')
@@ -74,26 +86,38 @@ def student_response():
     dcount = 0
     mcqcount = 0
     fillcount = 0
+    result = []
+    scores = []
+    answers= []
+    refans = []
     try:
         #Getting form data from question.html
         selected_question = request.form.getlist('selectedquestion')
         descanswer = request.form.getlist('descanswer')
+        #The option here is the option selected by the student
         option = request.form.getlist("option")
         matchans = request.form.getlist("matchans")
         fillanswer = request.form.getlist("fillanswer")
+        result.append(selected_question)
         for i in range(0,len(selected_question)):
             q = Question.query.filter_by(questionTitle = selected_question[i]).first()
+            refans.append(q.referenceAnswer)
+            score = 0
             if q.questionType == 0:#MCQ
+                ans = option[mcqcount]
                 if option[mcqcount] == q.referenceAnswer:
                     score = score + q.marks
                 max_score = max_score + q.marks
+                scores.append(score)
                 question.logger.info(option[mcqcount])
                 question.logger.info(score)
                 mcqcount = mcqcount + 1
             elif q.questionType == 1:#Fill in the blanks
+                ans = fillanswer[fillcount]
                 if fillanswer[fillcount] == q.referenceAnswer:
                     score = score + q.marks
                 max_score = max_score + q.marks
+                scores.append(score)
                 question.logger.info(fillanswer[fillcount])
                 question.logger.info(score)
                 fillcount = fillcount + 1
@@ -102,17 +126,22 @@ def student_response():
                 for i in q.referenceAnswer:
                     if i != ',':
                         m.append(i)
-                if matchans == m:
-                    score = score + q.marks
+                l = len(m)
+                ans = matchans
+                for i in range(0,l):
+                    if matchans[i] == m[i]:
+                        score = score + q.marks/l
                 max_score = max_score + q.marks
+                scores.append(score)
                 question.logger.info(m)
                 question.logger.info(score)
 
             else:#Descriptive
                 
                 response = []
-                response.append(descanswer[dcount])
-                response.append(selected_question[i])
+                ans = descanswer[dcount]
+                response.append(ans)
+                response.append(q.questionTitle)
                 response.append(q.referenceAnswer)
                 question.logger.info(response)
                 try:
@@ -122,12 +151,16 @@ def student_response():
                     dcount = dcount + 1
                 except:
                     question.logger.info("descriptive answer evaluation error")
+                scores.append(score)
                 question.logger.info(score)
+            answers.append(ans)
     except:
         question.logger.info("Failed to submit data")
-    result = []
-    result.append(score)
+    result.append(refans)
+    result.append(answers)
+    result.append(scores)
     result.append(max_score)
+    question.logger.info(result)
     return render_template('display.html',response = [result])#Page after answer submission
 
 @question.route('/',methods=['POST','GET'])   
@@ -143,6 +176,7 @@ def index():
         initdb() #creates db,initializes values
 
     #Below code for generating random list of question ids
+    #Use generateQuestions()
     """ q = Question.query.all()
     question_list = []
     no_of_questions = 5

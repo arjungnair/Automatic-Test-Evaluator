@@ -98,7 +98,7 @@ def evaluate(qapair):
     X = preprocess(referenceAnswer)  
     Y = preprocess(studentAnswer)
     match = 1
-    match = 1 - matched_keywords(X,Y)
+    #match = 1 - matched_keywords(X,Y)
     if match == 0:
         cosine = 0
     else:

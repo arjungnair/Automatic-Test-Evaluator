@@ -9,7 +9,6 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///main.db'
 app.secret_key = 'hUYF/khi+uGilH1'
 db = SQLAlchemy(app)
-currentUser = ""
 
 class User(db.Model):
     user_id = db.Column(db.Integer,primary_key = True)
@@ -29,8 +28,6 @@ class User(db.Model):
 
 def WriteUserToDb(records):
     for record in records:
-        
-
         user = User(record["user_id"],record["name"],record["email"],record["password"],record["usertype"])
         db.session.add(user)
         db.session.commit()
@@ -77,12 +74,13 @@ def index():
         db.create_all()
         initdb()
     #DisplayUserFromDb()#testing
-    return redirect('/login')#
-    return render_template('index.html',records=[records])#dictionaries can't be passed
+    return redirect('/login')
+    #return render_template('index.html',records=[records])#dictionaries can't be passed
     
 @app.route('/login',methods=['POST','GET'])   
 def login(): 
     session.pop('email', None)      #sign out if already signed in
+    session.pop('name', None)
     session.pop('usertype', None)
     if request.method == "POST":
         
@@ -94,7 +92,7 @@ def login():
             if password == "":
                 return render_template('login.html', error = "Enter a password!")
 
-            record = db.session.query(User.email, User.password, User.usertype).filter_by(email=email).first()
+            record = db.session.query(User.email, User.password, User.usertype, User.name).filter_by(email=email).first()
         
             if record is None:
                 return render_template('login.html', error = "Account not found.")
@@ -103,8 +101,9 @@ def login():
             else:
                 session['email'] = email
                 session['usertype'] = record.usertype
-                return render_template('login.html', error = "Logged in!")
-                
+                session['name'] = record.name
+                #return render_template('login.html', error = "Logged in!")
+                return redirect('/dashboard')
         if request.form.get("signup"):
             return redirect('/signup')
 
@@ -153,6 +152,14 @@ def signup():
 
     return render_template('register.html', error = " ")
     
+@app.route('/dashboard',methods=['POST','GET'])   
+def dashboard(): 
+    if session['usertype'] == 1:
+        return render_template('student_dash.html', username = session['name'])
+    
+    elif session['usertype'] == 2:
+        return render_template('teacher_dash.html', username = session['name'])
+  
 if __name__ == "__main__":
     app.run(debug=True)
  
