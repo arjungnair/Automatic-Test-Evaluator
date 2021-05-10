@@ -43,9 +43,9 @@
                         {% set len = x|length %}
                         <input type="hidden" id="matchmark" name="matchmark" value = "{{len}}">
                         {% for i in range(len) %}
-                            <p style="display: inline;">{{i + 1}}. </p>
-                            <p style="display: inline-block; width: 300px;">{{x[i]}}</p>
                             <input type="text" id="matchans" name="matchans" size ="1">
+                            <p style="display: inline-block; width: 300px;">{{x[i]}}</p>
+                            <p style="display: inline;">{{i + 1}}. </p>
                             <p style="display: inline-block; width: 100px;">{{y[i]}}</p>
                             <br><br>
                         {% endfor %}

@@ -10,7 +10,6 @@ import random
 question = Flask(__name__)
 question.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///question.db'
 db = SQLAlchemy(question)
-
 class Question(db.Model):
     question_id = db.Column(db.Integer,primary_key = True)
     questionTitle = db.Column(db.String(200), nullable=False)
@@ -90,6 +89,8 @@ def student_response():
     scores = []
     answers= []
     refans = []
+    qtype = []
+    matchops = []
     try:
         #Getting form data from question.html
         selected_question = request.form.getlist('selectedquestion')
@@ -102,6 +103,7 @@ def student_response():
         for i in range(0,len(selected_question)):
             q = Question.query.filter_by(questionTitle = selected_question[i]).first()
             refans.append(q.referenceAnswer)
+            qtype.append(q.questionType)
             score = 0
             if q.questionType == 0:#MCQ
                 ans = option[mcqcount]
@@ -123,6 +125,7 @@ def student_response():
                 fillcount = fillcount + 1
             elif q.questionType == 2:#Match the following
                 m = []
+                matchops.append(q.options)
                 for i in q.referenceAnswer:
                     if i != ',':
                         m.append(i)
@@ -158,6 +161,8 @@ def student_response():
         question.logger.info("Failed to submit data")
     result.append(refans)
     result.append(answers)
+    result.append(qtype)
+    result.append(matchops)
     result.append(scores)
     result.append(max_score)
     question.logger.info(result)

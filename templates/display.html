@@ -12,16 +12,44 @@
     <!--r[0]: set of questions
         r[1]: set of reference answers
         r[2]: set of student answers
-        r[3]: set of scores
-        r[4]: max score-->
-        {% set score = r[3] | sum() %}
-        <h3>Score: {{score}} / {{r[4]}}</h3>
+        r[3]: question type
+        r[4]: Match the following options
+        r[5]: set of scores
+        r[6]: max score
+    r[4][i][r[1][j]]-->
+        {% set score = r[5] | sum() %}
+        {% set mc = 0 %}
+        <h3>Score: {{score}} / {{r[6]}}</h3>
         {% set len = r[3]|length %}
         {% for i in range(len) %}
-            <p>{{i+1}}. {{r[0][i]}}</p>
-            <p>Your Answer: {{r[2][i]}}</p>
-            <p>Correct Answer: {{r[1][i]}}</p>
-            <p>Score: {{r[3][i]}}</p>
+            {% if r[3][i] != 2 %}
+                <b><p>{{i+1}}. {{r[0][i]}}</p></b>
+                <p>Your Answer: {{r[2][i]}}</p>
+                <p>Correct Answer: {{r[1][i]}}</p>
+                <p>Score: {{r[5][i]}}</p>
+            {% else %}  
+                
+                {% set matchq = r[0][i].split(',') %}
+                {% set matchref = r[1][i].split(',') %}
+                {% set len2 = matchq | length %}
+                <b><p>{{i+1}}. Match the Following</p></b>
+                <p style="display: inline-block; width: 300px;"> Question</p>
+                <p style="display: inline-block; width: 300px;">Correct Answer</p>
+                <p style="display: inline-block; width: 300px;">Your Answer</p>
+                <br>
+                {% for j in range(len2) %}
+                    {% set matchops = r[4][mc].split(',') %}
+                    {% set stu = r[2][i][j] | int %}
+                    {% set ref = matchref[j] | int %}
+                    <p style="display: inline;">{{j + 1}}. </p>
+                    <p style="display: inline-block; width: 300px;">{{matchq[j]}}</p>
+                    <p style="display: inline-block; width: 300px;">{{matchops[ref -1]}}</p>
+                    <p style="display: inline-block; width: 300px;">{{matchops[stu-1]}}</p>
+                    <br>
+                {% endfor %}
+                {% set mc = mc + 1 %}
+                <p>Score: {{r[5][i]}}</p>
+            {% endif %}
         {% endfor %}
     {% endfor %}
 </div>
