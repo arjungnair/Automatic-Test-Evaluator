@@ -109,6 +109,11 @@ def login():
 
     return render_template('login.html', error = " ")
     
+@app.route('/createtest',methods=['POST','GET'])  
+def create_test():
+    return render_template('createtest.html')
+
+
 @app.route('/signup',methods=['POST','GET'])   
 def signup(): 
     if request.method == "POST":
