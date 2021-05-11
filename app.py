@@ -348,14 +348,17 @@ def create_test():
 
     return render_template('createtest.html')
 
-@app.route('/tests',methods=['POST','GET'])
-def view_tests():
-    
-    try:
-        tests = Test.query.all()
-    except: 
-        app.logger.info("select test query Failed")
-    return render_template('tests.html',response = [tests])
+@app.route('/viewtest',methods=['POST','GET'])   
+def viewtest(): 
+    if request.method == "POST":
+        if request.form.get("Cancel"):
+            pass
+        if request.form["view"]:
+            x = request.form["view"]
+            question_list = map(int, x.split(','))
+            questions = ExtractQFromDb(question_list)
+    app.logger.info(question_list)
+    return render_template('question.html',questions = [questions])
 
 @app.route('/signup',methods=['POST','GET'])   
 def signup(): 

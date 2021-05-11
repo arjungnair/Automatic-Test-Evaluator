@@ -62,22 +62,25 @@
 			<!--main container start-->
 			<div style="background-image: url('../static/img/input-bg-05.jpg');"> 
 			<div class="main-container">
+			<form action="{{ url_for('viewtest') }}" method="POST">
+				<input type="hidden" id="testdata" name="testdata" value = "{{info[0][1:]}}">
 				{% set len = info[0] | length %}
 				{% for i in range(1,len) %}
 				<div class="card">
-					<p><a href="#"><i class="fas fa-info-circle"></i><span>{{info[0][i].test_name}}</span></a>
+					<p><i class="fas fa-info-circle"></i><span>{{info[0][i].test_name}}</span>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<button type="cancel" style="float:right" onclick="window.location='log.html';return false;">X</button>
+						<input type="submit" style="float:right" value="Cancel">
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<button type="submit" style="float:right" onclick="window.location='log.html';return false;">View Test</button>
+						<button style="float:right" name="view" value="{{info[0][i].question_list}}" type="submit">View</button>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 						</p>
 
 				</div>
 				{% endfor %}
+			</form>
 			</div>
 			<!--main container end-->
 		</div>
