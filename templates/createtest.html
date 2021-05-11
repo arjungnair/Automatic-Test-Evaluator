@@ -1,1 +1,29 @@
-<h1>Hello</h1>
+<!DOCTYPE html>
+<head>
+<title>Create Test</title>
+<meta charset = "utf-8">
+
+</head>
+<body>	
+<div class="home">
+	<div class="formbox">
+			<form id="createtestform" action="/createtest" method="post">	
+				<h1>Create Test</h1>	
+				<br>	
+                <p id="errorMessage" class="error">{{error}}</p>	
+				<label>Test name 
+					<br>
+					<input id="testname" type="text" name="testname">			
+				</label><br><br>
+				<label> No of Questions 
+					<br>
+					<input id="name" type="number" name="qno">			
+				</label><br><br>
+				
+				<button type="submit" name = 'createtest' value="createtest" class="btn">Create Test</button>	
+                <button type="submit" name = 'cancel' value="cancel" class="btn">Cancel</button>
+		</form>
+	</div>
+</div>
+</body>
+</html>

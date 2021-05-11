@@ -31,28 +31,15 @@
 				<div class="sidebar-menu">
 					<center class="profile">
 						<img src="../static/img/input-bg-01.jpg" alt="">
-						<p>{{username}}</p>
+						<p>{{info[0][0]}}</p>
 					</center>
-					<li class="item">
-						<a href="#" class="menu-btn">
-							<i class="fas fa-desktop"></i><span>WORK</span>
-						</a>
-					</li>
-					<li class="item" id="profile">
-						<a href="#profile" class="menu-btn">
-							<i class="fas fa-user-circle"></i><span>Profile <i class="fas fa-chevron-down drop-down"></i></span>
-						</a>
-						<div class="sub-menu">
-							<a href="#"><i class="fas fa-image"></i><span>Picture</span></a>
-							<a href="#"><i class="fas fa-address-card"></i><span>Details</span></a>
-						</div>
-					</li>
+
+
 					<li class="item" id="messages">
 						<a href="#messages" class="menu-btn">
 							<i class="fas fa-envelope"></i><span>Results <i class="fas fa-chevron-down drop-down"></i></span>
 						</a>
 						<div class="sub-menu">
-							<a href="#"><i class="fas fa-envelope"></i><span>CLASS Wise</span></a>
 							<a href="#"><i class="fas fa-envelope-square"></i><span>Student Wise</span></a>
 							<!--a href="#"><i class="fas fa-exclamation-circle"></i><span></span></a-->
 						</div>
@@ -63,6 +50,7 @@
 						</a>
 						
 					</li>
+
 					<li class="item">
 						<a href="#" class="menu-btn">
 							<i class="fas fa-info-circle"></i><span>About</span>
@@ -74,22 +62,22 @@
 			<!--main container start-->
 			<div style="background-image: url('../static/img/input-bg-05.jpg');"> 
 			<div class="main-container">
-				
+				{% set len = info[0] | length %}
+				{% for i in range(1,len) %}
 				<div class="card">
-					<p><a href="#"><i class="fas fa-info-circle"></i><span>TEST 1</span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<p><a href="#"><i class="fas fa-info-circle"></i><span>{{info[0][i].test_name}}</span></a>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="cancel" onclick="window.location='log.html';return false;">X</button></p>
-				</div>
-				<div class="card">
-					<p><a href="#"><i class="fas fa-info-circle"></i><span>TEST 2</span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="cancel" onclick="window.location='log.html';return false;">X</button></p>
+						<button type="cancel" style="float:right" onclick="window.location='log.html';return false;">X</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<button type="submit" style="float:right" onclick="window.location='log.html';return false;">View Test</button>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						</p>
+
 				</div>
-				<div class="card">
-					<p><a href="#"><i class="fas fa-info-circle"></i><span>TEST 3</span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="cancel" onclick="window.location='log.html';return false;">X</button></p>
-				</div>
+				{% endfor %}
 			</div>
 			<!--main container end-->
 		</div>
