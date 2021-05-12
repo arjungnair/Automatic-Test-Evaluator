@@ -34,7 +34,7 @@
 						<p>{{info[0][0]}}</p>
 					</center>
 
-
+					<!--No ol or ul here is concerning-->
 					<li class="item" id="messages">
 						<a href="#messages" class="menu-btn">
 							<i class="fas fa-envelope"></i><span>Results <i class="fas fa-chevron-down drop-down"></i></span>
@@ -46,7 +46,14 @@
 					</li>
 					<li class="item" id="createtest">
 						<a href="/createtest" class="menu-btn">
-							<i class="fas fa-cog"></i><span>Create Test <i class="fas fa-chevron"></i></span>
+							<i class="fas fa-edit"></i><span>Create Test <i class="fas fa-chevron"></i></span>
+						</a>
+						
+					</li>
+
+					<li class="item" id="addquestiondb">
+						<a href="/addquestiondb" class="menu-btn">
+							<i class="fas fa-plus-square"></i><span>Add question to database <i class="fas fa-chevron"></i></span>
 						</a>
 						
 					</li>
@@ -62,16 +69,17 @@
 			<!--main container start-->
 			<div style="background-image: url('../static/img/input-bg-05.jpg');"> 
 			<div class="main-container">
+			<p id="errorMessage" class="error">{{error}}</p>
 			<form action="{{ url_for('viewtest') }}" method="POST">
 				<input type="hidden" id="testdata" name="testdata" value = "{{info[0][1:]}}">
 				{% set len = info[0] | length %}
 				{% for i in range(1,len) %}
 				<div class="card">
-					<p><i class="fas fa-info-circle"></i><span>{{info[0][i].test_name}}</span>
+					<p>{{info[0][i].test_name}}
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<input type="submit" style="float:right" value="Cancel">
+						<button style="float:right" name="delete" value="{{info[0][i].test_id}}" type="submit">Delete</button>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 						<button style="float:right" name="view" value="{{info[0][i].question_list}}" type="submit">View</button>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

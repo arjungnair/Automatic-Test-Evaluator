@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<head>
+<title>Add question to Database</title>
+<meta charset = "utf-8">
+
+</head>
+<body>	
+<div class="home">
+	<div class="formbox">
+			<form id="addquestiondbform" action="/addquestiondb" method="post">	
+				<h1>Add question to Database</h1>	
+				<br>	
+                <p id="errorMessage" class="error">{{error}}</p>	
+                <label for="qtype">Choose question type:</label>
+                <select id="qtype" name="qtype">
+                  <option value="0">MCQ</option>
+                  <option value="1">Fill in the blanks</option>
+                  <option value="2">Match the following</option>
+                  <option value="3">Descriptive answer</option>
+                </select> <br><br>
+                {% if gottype is defined %}
+                    {% set button = "Submit" %}
+                    {% if gottype == 0 %}
+                        <h1>MCQ</h1>
+                    {% endif %}
+                    {% if gottype == 1 %}
+                        <h1>Fill in the blanks</h1>
+                    {% endif %}
+                    {% if gottype == 2 %}
+                        <h1>Match the following</h1>
+                    {% endif %}
+                    {% if gottype == 3 %}
+                        <h1>Descriptive Answer</h1>
+                    {% endif %}
+                {% else %}
+                    {% set button = "Select" %}
+                {% endif %}
+				<!-- <label> No of Questions 
+					<br>
+					<input id="name" type="number" name="qno">			
+				</label><br><br>
+				
+				<button type="submit" name = 'createtest' value="createtest" class="btn">Create Test</button> -->	
+                <button type="submit" name = 'add' value="add" class="btn">{{button}}</button>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>

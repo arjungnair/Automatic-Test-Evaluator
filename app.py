@@ -18,7 +18,7 @@ class Test(db.Model):
     __bind_key__ = 'test'
     test_id = db.Column(db.Integer,primary_key = True)
     test_name = db.Column(db.String(100), nullable=False)
-    creator_id = db.Column(db.Integer,primary_key = True)
+    creator_id = db.Column(db.Integer)
     question_list = db.Column(db.String(200), nullable=False)
 
     def __init__(self,test_id,test_name,creator_id,question_list):
@@ -115,7 +115,7 @@ def ExtractQFromDb(question_list):
     try:
         return questions
     except: 
-        question.logger.info("ExtractQFromDb(): question extraction from db Failed")
+        app.logger.info("ExtractQFromDb(): question extraction from db Failed")
 
 def evaluatemarks(questionanswer):
     return evaluator.evaluate(questionanswer)
@@ -252,7 +252,7 @@ def index():
         initQdb()
     #Test Database
     my_file_test = Path("test.db")
-    if my_file_question.is_file():
+    if my_file_test.is_file():
         # file exists
         app.logger.info("test db exists")
     else:
@@ -309,7 +309,17 @@ def login():
             return redirect('/signup')
 
     return render_template('login.html', error = " ")
-    
+
+@app.route('/addquestiondb',methods=['POST','GET'])
+def addquestiondb():
+    if request.method == "POST":
+        if request.form.get("add"):
+            x = request.form.get("qtype")
+            app.logger.info(x)
+            if x:
+                return render_template('addquestiondb.html',gottype = int(x))
+    return render_template('addquestiondb.html')
+
 @app.route('/createtest',methods=['POST','GET'])  
 def create_test():
     if request.method == "POST":
@@ -351,14 +361,20 @@ def create_test():
 @app.route('/viewtest',methods=['POST','GET'])   
 def viewtest(): 
     if request.method == "POST":
-        if request.form.get("Cancel"):
-            pass
-        if request.form["view"]:
-            x = request.form["view"]
+        if request.form.get('view'):
+            x = request.form.get('view')
             question_list = map(int, x.split(','))
             questions = ExtractQFromDb(question_list)
-    app.logger.info(question_list)
-    return render_template('question.html',questions = [questions])
+            app.logger.info(question_list)
+            return render_template('question.html',questions = [questions])
+        elif request.form.get('delete'):
+            y = request.form.get('delete')
+            Test.query.filter_by(test_id=y).delete()
+            db.session.commit()
+            app.logger.info(y)
+            return redirect('/dashboard')
+        
+    
 
 @app.route('/signup',methods=['POST','GET'])   
 def signup(): 
@@ -421,7 +437,6 @@ def dashboard():
                 })
 
         return render_template('teacher_dash.html', info = [response])
-  
 if __name__ == "__main__":
     app.run(debug=True)
  
