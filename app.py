@@ -8,11 +8,15 @@ import evaluator
 from numpy import genfromtxt
 import random
 
+
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///main.db'
 app.config['SQLALCHEMY_BINDS'] = {'question':'sqlite:///question.db','test':'sqlite:///test.db'}
 app.secret_key = 'hUYF/khi+uGilH1'
 db = SQLAlchemy(app)
+
+
 
 class Test(db.Model):
     __bind_key__ = 'test'
@@ -27,11 +31,17 @@ class Test(db.Model):
         self.creator_id = creator_id
         self.question_list = question_list
 
+
+
 def WriteTestToDb(records):
     for record in records:
         test = Test(record["test_id"],record["test_name"],record["creator_id"],record["question_list"])
         db.session.add(test)
         db.session.commit()
+
+
+
+
 
 class User(db.Model):
     user_id = db.Column(db.Integer,primary_key = True)
@@ -55,13 +65,17 @@ def WriteUserToDb(records):
         db.session.add(user)
         db.session.commit()
 
+
+
 def DisplayUserFromDb():
     user = User.query.all()
     try:
         app.logger.info(type(user))
     except: 
         app.logger.info("select query Failed")
-        
+
+
+
 def initdb():
     with open("datasets/userdata.csv") as user_csv:
         data = csv.reader(user_csv, delimiter=',')
@@ -85,6 +99,8 @@ def initdb():
             
     WriteUserToDb(records)
 
+
+
 class Question(db.Model):
     __bind_key__ = 'question'
     question_id = db.Column(db.Integer,primary_key = True)
@@ -102,11 +118,15 @@ class Question(db.Model):
         self.options = options
         self.marks = marks
 
+
+
 def WriteQToDb(records):
     for record in records:
         question = Question(record["question_id"],record["questionTitle"],record["referenceAnswer"],record["questionType"],record["options"],record["marks"])
         db.session.add(question)
         db.session.commit()
+
+
 
 def ExtractQFromDb(question_list):
     questions = []
@@ -117,8 +137,12 @@ def ExtractQFromDb(question_list):
     except: 
         app.logger.info("ExtractQFromDb(): question extraction from db Failed")
 
+
+
 def evaluatemarks(questionanswer):
     return evaluator.evaluate(questionanswer)
+
+
 
 def generateQuestions(no_of_questions):
     q = Question.query.all()
@@ -131,6 +155,8 @@ def generateQuestions(no_of_questions):
         else:
             question_list.append(n)
     return question_list
+
+
 
 def initQdb():
     with open("datasets/DatasetFinalcsv.csv") as user_csv:
@@ -154,6 +180,8 @@ def initQdb():
         
     WriteQToDb(records)
 
+
+
 @app.route('/student_response',methods=['POST','GET']) 
 def student_response():
     score = 0
@@ -171,6 +199,7 @@ def student_response():
         #Getting form data from question.html
         selected_question = request.form.getlist('selectedquestion')
         descanswer = request.form.getlist('descanswer')
+        app.logger.info(descanswer)
         #The option here is the option selected by the student
         option = request.form.getlist("option")
         matchans = request.form.getlist("matchans")
@@ -220,7 +249,10 @@ def student_response():
                 response.append(q.referenceAnswer)
 
                 try:
-                    markObtained = round(evaluatemarks(response)*q.marks,0) #executes function in evaluator.py and returns marks
+                    if ans != '':
+                        markObtained = round(evaluatemarks(response)*q.marks,0) #executes function in evaluator.py and returns marks
+                    else:
+                        markObtained = 0
                     score = score + markObtained
                     max_score = max_score + q.marks
                     dcount = dcount + 1
@@ -238,7 +270,9 @@ def student_response():
     result.append(scores)
     result.append(max_score)
     return render_template('display.html',response = [result])#Page after answer submission
-        
+
+
+
 @app.route('/',methods=['POST','GET'])   
 def index():
     #Question Database
@@ -278,6 +312,8 @@ def index():
     return render_template('question.html',questions = [questions]) """
     #return render_template('index.html',records=[records])#dictionaries can't be passed
     
+
+
 @app.route('/login',methods=['POST','GET'])   
 def login(): 
     session.pop('email', None)      #sign out if already signed in
@@ -310,15 +346,135 @@ def login():
 
     return render_template('login.html', error = " ")
 
+
+
 @app.route('/addquestiondb',methods=['POST','GET'])
 def addquestiondb():
     if request.method == "POST":
+        qtype = 0
+        mcqno = 0
+        opstr = ""
         if request.form.get("add"):
             x = request.form.get("qtype")
             app.logger.info(x)
+            app.logger.info("inside x")
             if x:
+                qtype = int(x)
                 return render_template('addquestiondb.html',gottype = int(x))
+        if request.form.get("mcqadd"):
+            if request.form.get("mcqopno"):
+                y = request.form.get("mcqopno")
+                app.logger.info(y)
+                app.logger.info("inside y")
+                mcqq = request.form.get("mcqq")
+                if y:
+                    mcqno = int(y)
+                    return render_template('addquestiondb.html',gottype = qtype, opno = mcqno,q = mcqq)
+        if request.form.get("mcqadd2"):
+            mcqno = int(request.form.get("mno"))
+            mcqq = request.form.get("mcqqt")
+            opstr = request.form.get("1")
+            for i in range(2,mcqno+1):
+                opstr = opstr + ',' + request.form.get(str(i))
+            app.logger.info(opstr)
+            mcqans = request.form.get(request.form.get("mcqans")) 
+            app.logger.info(mcqans) 
+
+            if mcqq == "":
+                return render_template('addquestiondb.html', error = "Enter a valid question")
+            if mcqans == "":
+                return render_template('addquestiondb.html', error = "Enter a valid answer") 
+            record = db.session.query(Question.questionTitle).filter_by(questionTitle=mcqq).first() 
+            if record is None:
+                qid = db.session.query(Question.question_id).order_by(Question.question_id.desc()).first().question_id + 1
+                records=[]    
+                
+                records.append({
+                    "question_id":qid,
+                    "questionTitle":mcqq,
+                    "referenceAnswer": mcqans,
+                    "questionType": qtype,
+                    "options":opstr,#only present for mcq and match
+                    "marks": 1
+                    })
+                WriteQToDb(records)
+                q = db.session.query(Question.questionTitle).filter_by(questionTitle=mcqq).first()
+                if q is None:
+                    app.logger.info("Question saving failed")
+                    return render_template('addquestiondb.html', error = "Question saving failed")
+                else:
+                    app.logger.info(q.questionTitle)
+                    return redirect('/dashboard')
+            else:
+                return render_template('addquestiondb.html', error = "Question already exists")
+        if request.form.get("filq"):
+            fillq = request.form.get("filq")
+            fillans = request.form.get("filans")
+            app.logger.info(fillq)
+            app.logger.info(fillans)
+            if fillq == "":
+                return render_template('addquestiondb.html', error = "Enter a valid question")
+            if fillans == "":
+                return render_template('addquestiondb.html', error = "Enter a valid answer")
+            
+            record = db.session.query(Question.questionTitle).filter_by(questionTitle=fillq).first()
+            if record is None:
+                qid = db.session.query(Question.question_id).order_by(Question.question_id.desc()).first().question_id + 1
+                records=[]    
+                
+                records.append({
+                    "question_id":qid,
+                    "questionTitle":fillq,
+                    "referenceAnswer": fillans,
+                    "questionType": qtype,
+                    "options":None,#only present for mcq and match
+                    "marks": 1
+                    })
+                WriteQToDb(records)
+                q = db.session.query(Question.questionTitle).filter_by(questionTitle=fillq).first()
+                if q is None:
+                    app.logger.info("Question saving failed")
+                    return render_template('addquestiondb.html', error = "Question saving failed")
+                else:
+                    app.logger.info(q.questionTitle)
+                    return redirect('/dashboard')
+            else:
+                return render_template('addquestiondb.html', error = "Question already exists")
+
+        if request.form.get("descq"):
+            descq = request.form.get("descq")
+            descans = request.form.get("descans")
+            if descq == "":
+                return render_template('addquestiondb.html', error = "Enter a valid question")
+            if descans == "":
+                return render_template('addquestiondb.html', error = "Enter a valid answer")
+            
+            record = db.session.query(Question.questionTitle).filter_by(questionTitle=descq).first()
+            if record is None:
+                qid = db.session.query(Question.question_id).order_by(Question.question_id.desc()).first().question_id + 1
+                records=[]    
+                
+                records.append({
+                    "question_id":qid,
+                    "questionTitle":descq,
+                    "referenceAnswer": descans,
+                    "questionType": qtype,
+                    "options":None,#only present for mcq and match
+                    "marks": 5
+                    })
+                WriteQToDb(records)
+                q = db.session.query(Question.questionTitle).filter_by(questionTitle=descq).first()
+                if q is None:
+                    app.logger.info("Question saving failed")
+                    return render_template('addquestiondb.html', error = "Question saving failed")
+                else:
+                    app.logger.info(q.questionTitle)
+                    return redirect('/dashboard')
+            else:
+                return render_template('addquestiondb.html', error = "Question already exists")    
     return render_template('addquestiondb.html')
+
+
 
 @app.route('/createtest',methods=['POST','GET'])  
 def create_test():
@@ -357,6 +513,8 @@ def create_test():
             
 
     return render_template('createtest.html')
+
+
 
 @app.route('/viewtest',methods=['POST','GET'])   
 def viewtest(): 
@@ -418,7 +576,9 @@ def signup():
                 return render_template('register.html', error = "An account associated with this e-mail ID already exists.")
 
     return render_template('register.html', error = " ")
-    
+
+
+
 @app.route('/dashboard',methods=['POST','GET'])   
 def dashboard(): 
     if session['usertype'] == 1:

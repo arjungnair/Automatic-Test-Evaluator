@@ -21,7 +21,8 @@
                         <br><br>
                         {% set x = q["options"].split(',') %}
                         {% for i in x %}
-                            <input type="radio" id="option" name="option" value="{{i}}">
+                        
+                            <input type="checkbox" id="option" name="option" value="{{i}}">
                             <label for="option">{{i}}</label><br>
                         {% endfor %}
                         <br><br>
