@@ -2,7 +2,13 @@
 <head>
 <title>Add question to Database</title>
 <meta charset = "utf-8">
-
+<style>
+span:before{
+    content:" "; 
+    display:inline-block; 
+    width:30px;
+}
+</style>
 </head>
 <body>	
 <div class="home">
@@ -40,23 +46,23 @@
                         {% endif %}
                         
                         {% if opno is defined and gottype is defined %}
-                        {% set val = "mcqadd2" %}
-                        <input type="hidden" id="mno" name="mno" value = "{{opno}}">
-                        <input type="hidden" id="mcqqt" name="mcqqt" value = "{{q}}">
-                        {% set button = "Select" %}
-                            {% set button = "Submit question" %}
-                            {% for i in range(0,opno) %}
-                                <label>Enter Option {{i+1}}:
+                            {% set val = "mcqadd2" %}
+                            <input type="hidden" id="mno" name="mno" value = "{{opno}}">
+                            <input type="hidden" id="mcqqt" name="mcqqt" value = "{{q}}">
+                            {% set button = "Select" %}
+                                {% set button = "Submit question" %}
+                                {% for i in range(0,opno) %}
+                                    <label>Enter Option {{i+1}}:
+                                        <br>
+                                        <input id="mcqop" type="text" name="{{i+1}}">	
+                                    </label>
+                                    <br><br>
+                                {% endfor %}
+                                <label>Correct option number
                                     <br>
-                                    <input id="mcqop" type="text" name="{{i+1}}">	
+                                    <input id="mcqans" type="number" name="mcqans">	
                                 </label>
                                 <br><br>
-                            {% endfor %}
-                            <label>Correct option number
-                                <br>
-                                <input id="mcqans" type="number" name="mcqans">	
-                            </label>
-                            <br><br>
                         {% endif %}
                     {% endif %}
                     {% if gottype == 1 %}
@@ -73,7 +79,45 @@
                         <br><br>
                     {% endif %}
                     {% if gottype == 2 %}
+                    {% set val = "matchsub1" %}
                         <h1>Match the following</h1>
+                        {% if matchnum is not defined %}
+                            <label>Enter no of options(on one side)
+                                <br>
+                                <input id="matchno" type="number" name="matchno">	
+                            </label>
+                            <br><br>
+                        {% endif %}
+                        {% if matchnum is defined %}
+                        {% set val = "matchsub2" %}
+                            <input type="hidden" id="matno" name="matno" value = "{{matchnum}}">
+                            <p style="display: inline-block; width: 300px;">Correct Answer index</p>
+                            <p style="display: inline-block; width: 300px;"> Left Side</p>
+                            <p style="display: inline-block; width: 300px;">Right Side</p>
+                            <br><br>
+                            {% for i in range(0,matchnum) %}
+                                {% set index = i | string %}
+                                {% set mleft = "mleft" + index %}
+                                {% set mcorrect = "mcorrect" + index %}
+                                {% set mright = "mright" + index %}
+                                <input id="{{mcorrect}}" type="number" name="{{mcorrect}}" style="display: inline-block; width: 50px;">
+                                <span> </span>
+                                <span> </span>
+                                <span> </span>
+                                <span> </span>
+                                <span> </span>
+                                <span> </span>
+                               
+                                
+                                <input id="{{mleft}}" type="text" name="{{mleft}}" style="display: inline-block; width: 200px;">
+                                <span> </span>
+                                <span> </span>
+                                <p style="display: inline;">{{i + 1}}. </p>
+                                <input id="{{mright}}" type="text" name="{{mright}}" style="display: inline-block; width: 200px;">
+                                <br><br>
+                            {% endfor %}
+                            <br><br>
+                        {% endif %}    
                     {% endif %}
                     {% if gottype == 3 %}
                         <h1>Descriptive Answer</h1>

@@ -65,12 +65,15 @@ print(X)
 print(Y)
 match = matched_keywords(Y,X)
 print(match) """
-randomlist = []
+""" randomlist = []
 no_of_questions = 5
 for i in range(0,no_of_questions):
     n = random.randint(1001,1001+35)
     if n in randomlist:
         continue
     else:
-        randomlist.append(n)
-print(randomlist)
+        randomlist.append(n) """
+X = preprocess("Biological Oxygen Demand (BOD) is the amount of oxygen present in water for sustaining life under water.")
+Y = preprocess("a c ll b c l")
+print(X)
+print(Y)

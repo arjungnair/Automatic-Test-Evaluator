@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css">
 
 {% endblock %}
 
@@ -8,6 +9,8 @@
 
 <div class ="userdata">
     <h1>Result</h1>
+
+    <a href="/dashboard"><i class="fas fa-arrow-circle-left fa-2x"></i></a>
     {% for r in response %}
     <!--r[0]: set of questions
         r[1]: set of reference answers
@@ -39,12 +42,17 @@
                 <br>
                 {% for j in range(len2) %}
                     {% set matchops = r[4][mc].split(',') %}
-                    {% set stu = r[2][i][j] | int %}
+                    
                     {% set ref = matchref[j] | int %}
                     <p style="display: inline;">{{j + 1}}. </p>
                     <p style="display: inline-block; width: 300px;">{{matchq[j]}}</p>
                     <p style="display: inline-block; width: 300px;">{{matchops[ref -1]}}</p>
-                    <p style="display: inline-block; width: 300px;">{{matchops[stu-1]}}</p>
+                    {% if r[2][i][j] != '' %}
+                        {% set stu = r[2][i][j] | int %}
+                            <p style="display: inline-block; width: 300px;">{{matchops[stu-1]}}</p>
+                    {% else %}
+                        <p style="display: inline-block; width: 300px;"></p>
+                    {% endif %}
                     <br>
                 {% endfor %}
                 {% set mc = mc + 1 %}
@@ -52,5 +60,7 @@
             {% endif %}
         {% endfor %}
     {% endfor %}
+   
 </div>
+
 {% endblock %}

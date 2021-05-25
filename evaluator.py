@@ -97,6 +97,8 @@ def evaluate(qapair):
 
     X = preprocess(referenceAnswer)  
     Y = preprocess(studentAnswer)
+    if len(Y) == 0:
+        Y = ['']
     match = 1
     #match = 1 - matched_keywords(X,Y)
     if match == 0:
