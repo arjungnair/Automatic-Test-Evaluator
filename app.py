@@ -315,6 +315,7 @@ def student_response():
     result.append(matchops)
     result.append(scores)
     result.append(max_score)
+    app.logger.info(result)
     return render_template('display.html',response = [result])#Page after answer submission
 
 
@@ -656,6 +657,7 @@ def viewtest():
             questions = ExtractQFromDb(question_list)
             app.logger.info(question_list)
             return render_template('question.html',questions = [questions])
+            
         elif request.form.get('delete'):
             y = request.form.get('delete')
             Test.query.filter_by(test_id=y).delete()
@@ -663,9 +665,53 @@ def viewtest():
             db.session.commit()
             app.logger.info(y)
             return redirect('/dashboard')
-        
+            
+        elif request.form.get('results'):
+            session['test_id'] = request.form.get('results')
+            return redirect('/results')
+            
+def get_answers(student_id):
+    questions = []
+    result = []
+    scores = []
+    answers= []
+    refans = []
+    qtype = []
+    matchops = []
+    maxscore = 0
     
-
+    responses = Response.query.filter_by(student_id = student_id).filter_by(test_id = session['test_id'])
+    for response in responses:
+        question = Question.query.filter_by(question_id = response.question).first()
+        questions.append(question.questionTitle)
+        refans.append(question.referenceAnswer)
+        answers.append(response.answer)
+        qtype.append(question.questionType)
+        matchops.append(question.options)
+        scores.append(response.pointsAwarded)
+        maxscore = maxscore + question.marks
+      
+    result.append(questions)              
+    result.append(refans)
+    result.append(answers)
+    result.append(qtype)
+    result.append(matchops)
+    result.append(scores)
+    result.append(maxscore)#maxscore
+    return result
+    
+@app.route('/view_answers',methods=['POST','GET'])   
+def view_answers():
+    if session['usertype']==1:
+        student_id = session['user_id']
+        session['test_id'] = request.form.get('results')
+        return render_template('display.html',response = [get_answers(student_id)])
+    else:
+        if request.method == "POST":
+            if request.form.get('view'):
+                student_id = request.form.get('view')
+                return render_template('display.html',response = [get_answers(student_id)])
+               
 @app.route('/signup',methods=['POST','GET'])   
 def signup(): 
     if request.method == "POST":
@@ -733,7 +779,7 @@ def dashboard():
                     })
 
         return render_template('student_dash.html', info = [response])
-    
+        
     elif session['usertype'] == 2:
         response = []
         response.append(session['name'])
@@ -747,6 +793,44 @@ def dashboard():
                 })
 
         return render_template('teacher_dash.html', info = [response])
+    
+    
+        
+@app.route('/results',methods=['POST','GET'])   
+def results(): 
+    if session['usertype'] == 1:
+        response = []
+        response.append(session['name'])
+        completedTests = Response.query.filter_by(student_id = session['user_id'])
+        app.logger.info(completedTests)
+        tests = Test.query.filter_by()
+        for test in tests:
+            testComplete = False
+            for completedTest in completedTests:
+                if completedTest.test_id == test.test_id:
+                    testComplete = True
+                    break
+            if testComplete == True:
+                response.append({"test_id":test.test_id,
+                    "test_name":test.test_name,
+                    "creator_id": test.creator_id,
+                    "question_list": test.question_list
+                    })
+
+        return render_template('student_dash_results.html', info = [response])
+     
+    elif session['usertype'] == 2:
+        data = []
+        testname = Test.query.filter_by(test_id = session['test_id']).first().test_name
+        results = db.session.query(Response.student_id, db.func.sum(Response.pointsAwarded).label('score')).group_by(Response.student_id).order_by(db.desc(db.func.sum(Response.pointsAwarded))).all()
+        for result in results:
+            student_name = db.session.query(User.name).filter(User.user_id==result.student_id).first().name
+            data.append({"student_id":result.student_id,
+                "student_name":student_name,
+                "score":result.score,
+                })
+        return render_template('results.html', testname = testname, table = data)
+        
 if __name__ == "__main__":
     app.run(debug=True)
  
