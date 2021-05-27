@@ -219,14 +219,15 @@ def student_response():
     refans = []
     qtype = []
     matchops = []
+    option = []
     try:
         #Getting form data from question.html
         selected_question = request.form.getlist('selectedquestion')
         descanswer = request.form.getlist('descanswer')
         app.logger.info(descanswer)
         #The option here is the option selected by the student
-        option = request.form.getlist("option")
-        matchans = request.form.getlist("matchans")
+        
+        
         fillanswer = request.form.getlist("fillanswer")
         result.append(selected_question)
         for i in range(0,len(selected_question)):
@@ -241,6 +242,9 @@ def student_response():
 
             score = 0
             if q.questionType == 0:#MCQ
+                opid = "option" + str(q.question_id)
+                option.append(request.form.get(opid))
+                app.logger.info(option)
                 ans = option[mcqcount]
                 if option[mcqcount] == q.referenceAnswer:
                     score = score + q.marks
@@ -262,12 +266,14 @@ def student_response():
 
             elif q.questionType == 2:#Match the following
                 m = []
+                mid = "matchans" + str(q.question_id)
+                matchans = request.form.getlist(mid)
                 matchops.append(q.options)
                 for i in q.referenceAnswer:
                     if i != ',':
                         m.append(i)
                 l = len(m)
-                ans = matchans
+                ans = ','.join(matchans)
                 for i in range(0,l):
                     if matchans[i] == m[i]:
                         score = score + q.marks/l
@@ -305,17 +311,17 @@ def student_response():
             if session['usertype']==1:
                 try:
                     WriteResponseToDb([record])
-                except:
-                    app.logger.info("Couldn't write response to db")
+                except Exception as e:
+                    app.logger.info(e)
     except:
         app.logger.info("Failed to submit data")
     result.append(refans)
     result.append(answers)
+    app.logger.info(answers)
     result.append(qtype)
     result.append(matchops)
     result.append(scores)
     result.append(max_score)
-    app.logger.info(result)
     return render_template('display.html',response = [result])#Page after answer submission
 
 
@@ -608,6 +614,7 @@ def addquestiondb():
 
 @app.route('/createtest',methods=['POST','GET'])  
 def create_test():
+    question_list = []
     if request.method == "POST":
         if request.form.get("cancel"):
             return redirect('/dashboard')
@@ -618,28 +625,38 @@ def create_test():
                 return render_template('createtest.html', error = "Enter a valid test name!")
             if no_of_questions == "":
                 return render_template('createtest.html', error = "Enter a valid no of questions!")
-            question_list = generateQuestions(int(no_of_questions))
-            app.logger.info(question_list)
-            string_ints = [str(i) for i in question_list]
-            qlist = ",".join(string_ints)
-            app.logger.info(qlist)
-            x = Test.query.all()
-            app.logger.info(x)
-            if not x:
-                testid = 1
-            else:
-                testid = db.session.query(Test.test_id).order_by(Test.test_id.desc()).first().test_id + 1
-            u = User.query.filter_by(email = session['email']).first()
-            records=[]    
-            records.append({
-                "test_id":testid,
-                "test_name":test_name,
-                "creator_id": u.user_id,
-                "question_list": qlist,
-                })
-            app.logger.info(records)    
-            WriteTestToDb(records)
-            return redirect('/dashboard')
+            if request.form.get("randomize"):
+                question_list = generateQuestions(int(no_of_questions))
+            elif request.form.get("select"):
+                q = Question.query.all()
+                return render_template('createtest.html',qno = no_of_questions, questions = q, testname = test_name )
+        if request.form.get("createtest2"):
+            no_of_questions  = int(request.form.get("qno"))
+            test_name = request.form.get("name")
+            for i in range(0,no_of_questions):
+                question_list.append(int(request.form.get("question" + str(i))))
+        
+        app.logger.info(question_list)
+        string_ints = [str(i) for i in question_list]
+        qlist = ",".join(string_ints)
+        app.logger.info(qlist)
+        x = Test.query.all()
+        app.logger.info(x)
+        if not x:
+            testid = 1
+        else:
+            testid = db.session.query(Test.test_id).order_by(Test.test_id.desc()).first().test_id + 1
+        u = User.query.filter_by(email = session['email']).first()
+        records=[]    
+        records.append({
+            "test_id":testid,
+            "test_name":test_name,
+            "creator_id": u.user_id,
+            "question_list": qlist,
+            })
+        app.logger.info(records)    
+        WriteTestToDb(records)
+        return redirect('/dashboard')
             
 
     return render_template('createtest.html')
@@ -687,7 +704,8 @@ def get_answers(student_id):
         refans.append(question.referenceAnswer)
         answers.append(response.answer)
         qtype.append(question.questionType)
-        matchops.append(question.options)
+        if question.questionType == 2:
+            matchops.append(question.options)
         scores.append(response.pointsAwarded)
         maxscore = maxscore + question.marks
       
@@ -705,11 +723,13 @@ def view_answers():
     if session['usertype']==1:
         student_id = session['user_id']
         session['test_id'] = request.form.get('results')
+        app.logger.info(get_answers(student_id))
         return render_template('display.html',response = [get_answers(student_id)])
     else:
         if request.method == "POST":
             if request.form.get('view'):
                 student_id = request.form.get('view')
+                app.logger.info(get_answers(student_id))
                 return render_template('display.html',response = [get_answers(student_id)])
                
 @app.route('/signup',methods=['POST','GET'])   
@@ -833,9 +853,3 @@ def results():
         
 if __name__ == "__main__":
     app.run(debug=True)
- 
-
-    
-    
-    
-

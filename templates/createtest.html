@@ -11,19 +11,45 @@
 				<h1>Create Test</h1>	
 				<br>	
                 <p id="errorMessage" class="error">{{error}}</p>	
-				<label>Test name 
-					<br>
-					<input id="testname" type="text" name="testname">			
-				</label><br><br>
-				<label> No of Questions 
-					<br>
-					<input id="name" type="number" name="qno">			
-				</label><br><br>
-				
-				<button type="submit" name = 'createtest' value="createtest" class="btn">Create Test</button>	
-                <button type="submit" name = 'cancel' value="cancel" class="btn">Cancel</button>
+				{% if qno is not defined %}
+					<label>Test name 
+						<br>
+						<input id="testname" type="text" name="testname">			
+					</label><br><br>
+					<label> No of Questions 
+						<br>
+						<input id="name" type="number" name="qno">			
+					</label><br><br>
+					<input type="radio" id="randomize" name="randomize" value="randomize">
+					<label for="randomize">Randomize questions</label><br>
+					<input type="radio" id="select" name="select" value="select">
+					<label for="select">Select questions</label><br>
+					<button type="submit" name = 'createtest' value="createtest" class="btn">Create Test</button>	
+					<button type="submit" name = 'cancel' value="cancel" class="btn">Cancel</button>
+				{% endif %}
+				{% if qno is defined %}
+				<input type="hidden" id="qno" name="qno" value = "{{qno}}">
+				<input type="hidden" id="name" name="name" value = "{{testname}}">
+					{% set no = qno | int %}
+					{% set type = ['MCQ' , 'Fill in blanks','Match the following','Descriptive'] %}
+					{% for i in range(0,no) %}
+					{% set index = i | string %}
+					{% set selq = "question" + index %}
+					<label for="{{selq}}">Select Question {{i+1}} :</label>
+					<select name="{{selq}}" id="{{selq}}">
+						{% for question in questions %}
+						{% set x = question["questionType"] | int %}
+								<option value = {{question["question_id"]}}>{{type[x]}} : {{question["questionTitle"]}}</option>
+						{% endfor %}
+					</select>
+					<br><br>
+					{% endfor %}
+					<button type="submit" name = 'createtest2' value="createtest2" class="btn">Create Test</button>
+				{% endif %}  
+				 
 		</form>
 	</div>
 </div>
+
 </body>
 </html>

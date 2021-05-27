@@ -47,8 +47,9 @@
                     <p style="display: inline;">{{j + 1}}. </p>
                     <p style="display: inline-block; width: 300px;">{{matchq[j]}}</p>
                     <p style="display: inline-block; width: 300px;">{{matchops[ref -1]}}</p>
+                    {% set matchstu = r[2][i].split(',') %}
                     {% if r[2][i][j] != '' %}
-                        {% set stu = r[2][i][j] | int %}
+                        {% set stu = matchstu[j] | int %}
                             <p style="display: inline-block; width: 300px;">{{matchops[stu-1]}}</p>
                     {% else %}
                         <p style="display: inline-block; width: 300px;"></p>

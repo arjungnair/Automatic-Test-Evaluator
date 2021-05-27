@@ -7,6 +7,8 @@ from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from textblob import TextBlob, Word, Blobber
 import string
+from nltk.corpus import wordnet as wn
+from nltk import word_tokenize, pos_tag
 
 def remove_punctuation(text):
     text = "".join([c for c in text if c not in string.punctuation])
@@ -52,15 +54,73 @@ def preprocess(text):
 
 #divides the number of matching keywords in student answer and reference answer divided
 #by the no of keywords in the reference
-def matched_keywords(text1,text2):
-    n = 0
-    for w1 in text1:
-        for w2 in text2:
-            if w1 == w2:
-                n = n + 1
-    match = n/len(text1) #assume text1 is reference answer
-    return match
 
+def penn_to_wn(tag):
+    """ Convert between a Penn Treebank tag to a simplified Wordnet tag """
+    if tag.startswith('N'):
+        return 'n'
+ 
+    if tag.startswith('V'):
+        return 'v'
+ 
+    if tag.startswith('J'):
+        return 'a'
+ 
+    if tag.startswith('R'):
+        return 'r'
+ 
+    return None
+ 
+def tagged_to_synset(word, tag):
+    wn_tag = penn_to_wn(tag)
+    if wn_tag is None:
+        return None
+ 
+    try:
+        return wn.synsets(word, wn_tag)[0]
+    except:
+        return None
+ 
+def sentence_similarity(sentence1, sentence2):
+   
+    sentence1 = word_tokenize(sentence1)
+    sentence2 = word_tokenize(sentence2)
+    sentence1 = remove_punctuation(sentence1)
+    sentence2 = remove_punctuation(sentence2)
+    sentence1 = remove_stopwords(sentence1)
+    sentence2 = remove_stopwords(sentence2)
+    sentence1 = pos_tag(sentence1)
+    sentence2 = pos_tag(sentence2)
+    # Get the synsets for the tagged words
+    synsets1 = [tagged_to_synset(*tagged_word) for tagged_word in sentence1]
+    synsets2 = [tagged_to_synset(*tagged_word) for tagged_word in sentence2]
+ 
+    # Filter out the Nones
+    synsets1 = [ss for ss in synsets1 if ss is not None]
+    synsets2 = [ss for ss in synsets2 if ss is not None]
+
+    score, count = 0.0, 0
+ 
+    # For each word in the first sentence
+    for synset in synsets1:
+        # Get the similarity value of the most similar word in the other sentence
+        score_set = [synset.path_similarity(ss) for ss in synsets2]
+        best_score = 0
+        for i in score_set:
+            if i != None and i > best_score:
+                best_score = i
+        # Check that the similarity could have been computed
+        if best_score is not None:
+            score += best_score
+            count += 1
+ 
+    # Average the values
+    score /= count
+    return score
+
+def symmetric_sentence_similarity(sentence1, sentence2):
+    #averaging normal and reverse similarity
+    return (sentence_similarity(sentence1, sentence2) + sentence_similarity(sentence2, sentence1)) / 2 
 
 #Converts list of words in text to vectors and calculates cosine between vectors
 def cosine_sim(X,Y): 
@@ -99,14 +159,18 @@ def evaluate(qapair):
     Y = preprocess(studentAnswer)
     if len(Y) == 0:
         Y = ['']
-    match = 1
-    #match = 1 - matched_keywords(X,Y)
-    if match == 0:
-        cosine = 0
-    else:
-        cosine = cosine_sim(X,Y)
+   
+    cosine = cosine_sim(X,Y)
+    pos_sim = symmetric_sentence_similarity(referenceAnswer, studentAnswer)
+    score = (cosine + pos_sim)/2
+
+    #if answer is correct check if the answer is a contradiction
+    if score > 0.5:
+        score = score - score*polarity
     
-    cosine = cosine - cosine*polarity*match
-    return(cosine)
+    if cosine < 0.2:
+        score = cosine
+
+    return(score)
 
 

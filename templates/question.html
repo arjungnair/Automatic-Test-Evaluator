@@ -21,9 +21,10 @@
                         <br><br>
                         {% set x = q["options"].split(',') %}
                         {% for i in x %}
-                        
-                            <input type="checkbox" id="option" name="option" value="{{i}}">
-                            <label for="option">{{i}}</label><br>
+                            {% set index = q["question_id"] | string %}
+                            {% set option = "option" + index %}
+                            <input type="radio" id="{{option}}" name="{{option}}" value="{{i}}">
+                            <label for="{{option}}">{{i}}</label><br>
                         {% endfor %}
                         <br><br>
                     {% endif %}
@@ -44,7 +45,9 @@
                         {% set len = x|length %}
                         <input type="hidden" id="matchmark" name="matchmark" value = "{{len}}">
                         {% for i in range(len) %}
-                            <input type="number" id="matchans" name="matchans" size ="1">
+                            {% set index = q["question_id"] | string %}
+                            {% set matchans = "matchans" + index %}
+                            <input type="number" id="{{matchans}}" name="{{matchans}}" size = "1">
                             <p style="display: inline-block; width: 300px;">{{x[i]}}</p>
                             <p style="display: inline;">{{i + 1}}. </p>
                             <p style="display: inline-block; width: 100px;">{{y[i]}}</p>
