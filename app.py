@@ -842,7 +842,7 @@ def results():
     elif session['usertype'] == 2:
         data = []
         testname = Test.query.filter_by(test_id = session['test_id']).first().test_name
-        results = db.session.query(Response.student_id, db.func.sum(Response.pointsAwarded).label('score')).group_by(Response.student_id).order_by(db.desc(db.func.sum(Response.pointsAwarded))).all()
+        results = db.session.query(Response.student_id, db.func.sum(Response.pointsAwarded).label('score')).group_by(Response.student_id).order_by(db.desc(db.func.sum(Response.pointsAwarded))).filter_by(test_id = session['test_id']).all()
         for result in results:
             student_name = db.session.query(User.name).filter(User.user_id==result.student_id).first().name
             data.append({"student_id":result.student_id,
