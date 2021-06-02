@@ -49,15 +49,17 @@
                         {% set editbuttonid = "editbutton" + index %}
                         <form style="display: none;" id="{{formid}}" action="{{ url_for('view_answers') }}" method="POST">
                             <label for="scorechange">Enter the new score:</label>
-                            <input type="number" id="{{scorechangeid}}"/>
+                            <input type="number" id="{{scorechangeid}}" name="{{scorechangeid}}"  min = "0" max = "{{qmarks}}"/>
                             <input type="hidden" id="stud_id" name="stud_id" value = "{{edit}}">
                             <input type="hidden" id="question" name="question" value = "{{r[0][i]}}">
+                            <input type="hidden" id="index" name="index" value = "{{x}}">
                             <br>
-                            <input type="submit" value="{{changescoreid}}">
+                            <button type="submit" id ="changescore" name = "changescore" value="{{changescoreid}}">Change score</button>
+                            
                         </form>
                     <br><br>
-                    <button style="display: none;" id = "{{hidebuttonid}}" onclick="asd(i+1,0)"><i class="fas fa-eye-slash"></i> Hide</button>
-                    <button id ="{{editbuttonid}}" onclick="asd(i+1,1)"><i class="fas fa-edit"></i>Edit Score</button>
+                    <button style="display: none;" id = "{{hidebuttonid}}" onclick="asd({{x}},0)"><i class="fas fa-eye-slash"></i> Cancel</button>
+                    <button id ="{{editbuttonid}}" onclick="asd({{x}},1)"><i class="fas fa-edit"></i>Edit Score</button>
                     {% endif %}
                 </div>
             {% else %}  
@@ -65,12 +67,13 @@
                 {% set matchq = r[0][i].split(',') %}
                 {% set matchref = r[1][i].split(',') %}
                 {% set len2 = matchq | length %}
+                {% set qmarks = len2 %}
                 <div class= "q2">
-                    <b><p>{{i+1}}. Match the Following</p></b>
+                    <b><p>{{i+1}}. Match the Following</p></b><br><br>
                     <p style="display: inline-block; width: 250px;"> Question</p>
                     <p style="display: inline-block; width: 250px;">Correct Answer</p>
                     <p style="display: inline-block; width: 300px;">Your Answer</p>
-                    <br>
+                    <br><br>
                     {% for j in range(len2) %}
                         {% set matchops = r[4][mc].split(',') %}
                         
@@ -86,11 +89,33 @@
                             <p style="display: inline-block; width: 300px;"></p>
                         {% endif %}
                         
-                        <br>
+                        <br><br>
                     {% endfor %}
                 
                     {% set mc = mc + 1 %}
-                    <p>Score: {{r[5][i]}}</p>
+                    <br>
+                    <p>Score: {{r[5][i]}} / {{qmarks}}</p><br><br>
+                    {% if edit is defined %}
+                        {% set x = i + 1 %}
+                        {% set index = x | string %}
+                        {% set formid = "form" + index %}
+                        {% set scorechangeid = "scorechange" + index %}
+                        {% set changescoreid = "changescore" + index %}
+                        {% set hidebuttonid = "hidebutton" + index %}
+                        {% set editbuttonid = "editbutton" + index %}
+                        <form style="display: none;" id="{{formid}}" action="{{ url_for('view_answers') }}" method="POST">
+                            <label for="scorechange">Enter the new score:</label>
+                            <input type="number" id="{{scorechangeid}}" name="{{scorechangeid}}" min = "0" max = "{{qmarks}}"/>
+                            <input type="hidden" id="stud_id" name="stud_id" value = "{{edit}}">
+                            <input type="hidden" id="question" name="question" value = "{{r[0][i]}}">
+                            <input type="hidden" id="index" name="index" value = "{{x}}">
+                            <br>
+                            <button type="submit" id ="changescore" name = "changescore" value="{{changescoreid}}">Change score</button>
+                        </form>
+                    <br><br>
+                    <button style="display: none;" id = "{{hidebuttonid}}" onclick="asd({{x}},0)"><i class="fas fa-eye-slash"></i> Hide</button>
+                    <button id ="{{editbuttonid}}" onclick="asd({{x}},1)"><i class="fas fa-edit"></i>Edit Score</button>
+                    {% endif %}
                 </div>
             {% endif %}
         {% endfor %}
@@ -100,20 +125,17 @@
 <script>
     function asd(a,b)
     {  /*  b = 0 is hide, else show */
+        var index = a.toString()
+        var formid = "form" + index
+        var hidebuttonid = "hidebutton" + index
+        var editbuttonid = "editbutton" + index
         if(b==0){
-            var index = a.toString()
-            var formid = "form" + index
-            var hidebuttonid = "hidebutton" + index
-            var editbuttonid = "editbutton" + index
+            
             document.getElementById(formid).style.display="none";
             document.getElementById(hidebuttonid).style.display="none";
             document.getElementById(editbuttonid).style.display="block";
         }
         else if(b == 1){
-            var index = a.toString()
-            var formid = "form" + index
-            var hidebuttonid = "hidebutton" + index
-            var editbuttonid = "editbutton" + index
             document.getElementById(formid).style.display="block";
             document.getElementById(hidebuttonid).style.display="block";
             document.getElementById(editbuttonid).style.display="none";
