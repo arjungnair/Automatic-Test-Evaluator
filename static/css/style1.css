@@ -8,7 +8,54 @@
 }
 
 body{
-  background: #fff;
+  background-image: url(../img/input-bg-05.jpg);
+  background-size: cover;
+} 
+.userdata{
+  font-size: 40px;
+  
+  color: white;
+}
+.userdata1{
+  font-size: 40px;
+  
+  color: black;
+}
+.q {
+    width: 900px;
+    position: relative;
+    margin: 1% auto;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 5px blueviolet;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+
+}
+.q1 {
+  width: 900px;
+    height: 150px;
+    position: relative;
+    margin: 1% auto;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 5px blueviolet;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+
+}
+.q2 {
+    width: 900px;
+    position: relative;
+    margin: 1% auto;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: 5px blueviolet;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
 }
 
 .wrapper .header{
@@ -213,4 +260,35 @@ body{
   padding: 15px;
   margin-bottom: 10px;
   font-size: 14px;
+}
+#descanswer
+{
+  height:200px;
+  width: 850px;
+  font-size: 20px;
+}
+input[type=number]
+{
+  width : 50px;
+  padding: 6px;
+}
+#btn
+{
+  background-color: #4CAF50;
+    
+    border: none;
+    color: white;
+    padding: 20px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+
+    border-radius: 10%;
+    margin-bottom: 50px;
+    margin-left: 45%;
+}
+h3
+{
+  text-align: center;
 }

@@ -1,14 +1,14 @@
-<!doctype html>
-<title>Records</title>
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="../static/css/records.css">
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<link rel="stylesheet" href="../static/css/style1.css">
+    <link rel="stylesheet" href="../static/css/records.css">
+	</head>
+	<body>
 
 <div>
   <h1>{{testname}}</h1>
-  <div style="text-align:center">    
-	<a href="/dashboard">Return to dashboard</a>
-  </div>
   <form action="{{ url_for('view_answers') }}" method="POST">
   <div>
   <table class=records> 
@@ -34,3 +34,18 @@
   </div>
   </form>
 </div>
+</div>
+<!--main container end-->
+</div>
+<!--wrapper end-->
+
+<script type="text/javascript">
+$(document).ready(function(){
+$(".sidebar-btn").click(function(){
+  $(".wrapper").toggleClass("collapse");
+});
+});
+</script>
+
+</body>
+</html>

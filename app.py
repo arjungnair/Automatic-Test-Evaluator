@@ -24,18 +24,22 @@ class Test(db.Model):
     test_name = db.Column(db.String(100), nullable=False)
     creator_id = db.Column(db.Integer)
     question_list = db.Column(db.String(200), nullable=False)
+    start_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime)
 
-    def __init__(self,test_id,test_name,creator_id,question_list):
+    def __init__(self,test_id,test_name,creator_id,question_list,start_time,end_time):
         self.test_id = test_id
         self.test_name = test_name
         self.creator_id = creator_id
         self.question_list = question_list
 
+        self.start_time = start_time
+        self.end_time = end_time
 
 
 def WriteTestToDb(records):
     for record in records:
-        test = Test(record["test_id"],record["test_name"],record["creator_id"],record["question_list"])
+        test = Test(record["test_id"],record["test_name"],record["creator_id"],record["question_list"],record["start_time"],record["end_time"])
         db.session.add(test)
         db.session.commit()
 
@@ -171,13 +175,7 @@ def evaluatemarks(questionanswer):
 def generateQuestions(no_of_questions):
     q = Question.query.all()
     question_list = []
-    for i in range(0,no_of_questions):
-        n = random.randint(1001,1001+len(q) - 1)
-        if n in question_list:
-            i = i - 1
-            continue
-        else:
-            question_list.append(n)
+    question_list = random.sample(range(1001,1001+len(q)), no_of_questions)
     return question_list
 
 
@@ -315,14 +313,15 @@ def student_response():
                     app.logger.info(e)
     except:
         app.logger.info("Failed to submit data")
-    result.append(refans)
-    result.append(answers)
-    app.logger.info(answers)
-    result.append(qtype)
-    result.append(matchops)
-    result.append(scores)
-    result.append(max_score)
-    return render_template('display.html',response = [result])#Page after answer submission
+    return redirect('/dashboard')
+    """     result.append(refans)
+        result.append(answers)
+        app.logger.info(answers)
+        result.append(qtype)
+        result.append(matchops)
+        result.append(scores)
+        result.append(max_score)
+    return render_template('display.html',response = [result])#Page after answer submission """
 
 
 
@@ -621,6 +620,21 @@ def create_test():
         if request.form.get("createtest"):
             test_name = request.form['testname']
             no_of_questions = request.form['qno']
+            date = request.form.get("date")
+            start = request.form.get("start")
+            end = request.form.get("end")
+            fstart = start.split(":")
+            fend = end.split(":")
+            fdate = date.split(":")
+            try:
+                starttime = datetime.datetime(int(fdate[2]),int(fdate[1]),int(fdate[0]),int(fstart[0]),int(fstart[1]))
+            except:
+                return render_template('createtest.html', error = "Please enter correct start time in HH:MM format")
+            
+            try:
+                endtime = datetime.datetime(int(fdate[2]),int(fdate[1]),int(fdate[0]),int(fend[0]),int(fend[1]))
+            except:
+                return render_template('createtest.html', error = "Please enter correct end time in HH:MM format")
             if test_name == "":
                 return render_template('createtest.html', error = "Enter a valid test name!")
             if no_of_questions == "":
@@ -629,13 +643,32 @@ def create_test():
                 question_list = generateQuestions(int(no_of_questions))
             elif request.form.get("select"):
                 q = Question.query.all()
-                return render_template('createtest.html',qno = no_of_questions, questions = q, testname = test_name )
+                return render_template('createtest.html',qno = no_of_questions, questions = q, testname = test_name,s = start,e = end ,d = date)
         if request.form.get("createtest2"):
             no_of_questions  = int(request.form.get("qno"))
-            test_name = request.form.get("name")
+            start = request.form.get("st")
+            end = request.form.get("et")
+            date = request.form.get("dt")
+            start = start.split(':')
+            end = end.split(":")
+            date = date.split(":")
+            app.logger.info(start)
+            app.logger.info(end)
+            app.logger.info(date)
+            try:
+                starttime = datetime.datetime(int(date[2]),int(date[1]),int(date[0]),int(start[0]),int(start[1]))
+            except:
+                return render_template('createtest.html', error = "Please enter correct start time in HH:MM format")
+            
+            try:
+                endtime = datetime.datetime(int(date[2]),int(date[1]),int(date[0]),int(end[0]),int(end[1]))
+            except:
+                return render_template('createtest.html', error = "Please enter correct end time in HH:MM format")
+            test_name = request.form.get("tname")
+            app.logger.info(starttime)
             for i in range(0,no_of_questions):
                 question_list.append(int(request.form.get("question" + str(i))))
-        
+           
         app.logger.info(question_list)
         string_ints = [str(i) for i in question_list]
         qlist = ",".join(string_ints)
@@ -653,6 +686,8 @@ def create_test():
             "test_name":test_name,
             "creator_id": u.user_id,
             "question_list": qlist,
+            "start_time": starttime,
+            "end_time" : endtime
             })
         app.logger.info(records)    
         WriteTestToDb(records)
@@ -668,12 +703,14 @@ def viewtest():
     if request.method == "POST":
         if request.form.get('view'):
             session['test_id'] = request.form.get('view')
-            x = Test.query.filter_by(test_id = session['test_id'])[0].question_list
-
+            test = Test.query.filter_by(test_id = session['test_id'])
+            x = test[0].question_list
+            end = test[0].end_time
+            start = test[0].start_time
             question_list = map(int, x.split(','))
             questions = ExtractQFromDb(question_list)
             app.logger.info(question_list)
-            return render_template('question.html',questions = [questions])
+            return render_template('question.html',questions = [questions],endTime = end,startTime = start)
             
         elif request.form.get('delete'):
             y = request.form.get('delete')
@@ -730,8 +767,18 @@ def view_answers():
             if request.form.get('view'):
                 student_id = request.form.get('view')
                 app.logger.info(get_answers(student_id))
-                return render_template('display.html',response = [get_answers(student_id)])
-               
+                return render_template('display.html',edit = student_id,response = [get_answers(student_id)])
+            if request.form.get("changescore"):
+                q = request.form.get("question")
+                student_id = int(request.form.get("stud_id"))
+                try:
+                    response = Response.query.filter_by(question = q,student_id = student_id,test_id = session['test']).first()
+                    response.pointsAwarded = int(request.form.get("scorechange"))
+                    db.session.commit()
+                    return render_template('display.html',edit = student_id,response = [get_answers(student_id)])
+                except:
+                    return render_template('display.html',error = "Failed to edit score", edit = student_id,response = [get_answers(student_id)])
+                
 @app.route('/signup',methods=['POST','GET'])   
 def signup(): 
     if request.method == "POST":
@@ -792,11 +839,13 @@ def dashboard():
                     testComplete = True
                     break
             if testComplete == False:
-                response.append({"test_id":test.test_id,
-                    "test_name":test.test_name,
-                    "creator_id": test.creator_id,
-                    "question_list": test.question_list
-                    })
+                currentTime = datetime.datetime.utcnow()+datetime.timedelta(hours=5.5)
+                if currentTime >= test.start_time and currentTime <= test.end_time:
+                    response.append({"test_id":test.test_id,
+                        "test_name":test.test_name,
+                        "creator_id": test.creator_id,
+                        "question_list": test.question_list
+                        })
 
         return render_template('student_dash.html', info = [response])
         
@@ -831,11 +880,13 @@ def results():
                     testComplete = True
                     break
             if testComplete == True:
-                response.append({"test_id":test.test_id,
-                    "test_name":test.test_name,
-                    "creator_id": test.creator_id,
-                    "question_list": test.question_list
-                    })
+                currentTime = datetime.datetime.utcnow()+datetime.timedelta(hours=5.5)
+                if currentTime >=test.end_time:
+                    response.append({"test_id":test.test_id,
+                        "test_name":test.test_name,
+                        "creator_id": test.creator_id,
+                        "question_list": test.question_list
+                        })
 
         return render_template('student_dash_results.html', info = [response])
      
