@@ -1,5 +1,5 @@
 
-import string
+""" import string
 import nltk
 import random
 from nltk.stem import PorterStemmer
@@ -9,7 +9,13 @@ from nltk.corpus import stopwords
 from textblob import TextBlob, Word, Blobber
 from nltk.corpus import wordnet as wn
 from nltk import word_tokenize, pos_tag
+from nltk.util import ngrams
+import re
+from collections import Counter
+import math """
 
+""" NGRAM = 3
+re_stripper_alpha = re.compile('[^a-zA-Z]+')
 def remove_punctuation(text):
     text = "".join([c for c in text if c not in string.punctuation])
     return text
@@ -30,16 +36,16 @@ def word_stemmer(text):
     stemmer = PorterStemmer()
     t = [stemmer.stem(i) for i in text]
     return t
-
-def sentence_polarity(text1, text2):
+ """
+""" def sentence_polarity(text1, text2):
     text1 = TextBlob(text1)
     text2 = TextBlob(text2)
     print(text1.sentiment)
     print(text2.sentiment)
     polarity = abs(text1.sentiment.polarity - text2.sentiment.polarity)
     return polarity
-
-def matched_keywords(text1,text2):
+ """
+""" def matched_keywords(text1,text2):
     n = 0
     for w1 in text1:
         for w2 in text2:
@@ -47,14 +53,14 @@ def matched_keywords(text1,text2):
                 n = n + 1
     match = n/len(text1) #assume text1 is reference answer
     return match
-
-def preprocess(text):
+ """
+""" def preprocess(text):
     text = remove_punctuation(text)
     text = tokenize(text)
     text = remove_stopwords(text)
     text = word_lemmatizer(text)
     text = word_stemmer(text)
-    return text
+    return text """
 
 #print(preprocess("He was studying for the exam very rigourously, but he still couldn't pass the exam"))
 """ referenceAnswer = "Smog is a mixture of smoke and fog"
@@ -113,8 +119,8 @@ for synset in [dog, feline, mammal]:
     print ("Similarity(%s, %s) = %s" % (cat, synset, cat.wup_similarity(synset)))
 
 print(cat.wup_similarity(cat)) """
-def penn_to_wn(tag):
-    """ Convert between a Penn Treebank tag to a simplified Wordnet tag """
+""" def penn_to_wn(tag):
+    Convert between a Penn Treebank tag to a simplified Wordnet tag
     if tag.startswith('N'):
         return 'n'
  
@@ -140,7 +146,7 @@ def tagged_to_synset(word, tag):
         return None
  
 def sentence_similarity(sentence1, sentence2):
-    """ compute the sentence similarity using Wordnet """
+    compute the sentence similarity using Wordnet
     # Tokenize and tag
     sentence1 = word_tokenize(sentence1)
     sentence2 = word_tokenize(sentence2)
@@ -178,30 +184,61 @@ def sentence_similarity(sentence1, sentence2):
     return score
 
 def symmetric_sentence_similarity(sentence1, sentence2):
-    """ compute the symmetric sentence similarity using Wordnet """
+    compute the symmetric sentence similarity using Wordnet
     return (sentence_similarity(sentence1, sentence2) + sentence_similarity(sentence2, sentence1)) / 2 
  
+def get_tuples_textblob_sentences(txt):
+    New get_tuples that does use textblob.
+    if not txt: return None
+    tb = TextBlob(txt)
+    ng = (ngrams(x.words, NGRAM) for x in tb.sentences if len(x.words) > NGRAM)
+    return [item for sublist in ng for item in sublist]
 
+def jaccard_distance(a, b):
+    Calculate the jaccard distance between sets A and B
+    a = set(a)
+    b = set(b)
+    return 1.0 * len(a&b)/len(a|b)
+
+def cosine_similarity_ngrams(a, b):
+    vec1 = Counter(a)
+    vec2 = Counter(b)
+    
+    intersection = set(vec1.keys()) & set(vec2.keys())
+    numerator = sum([vec1[x] * vec2[x] for x in intersection])
+
+    sum1 = sum([vec1[x]**2 for x in vec1.keys()])
+    sum2 = sum([vec2[x]**2 for x in vec2.keys()])
+    denominator = math.sqrt(sum1) * math.sqrt(sum2)
+
+    if not denominator:
+        return 0.0
+    return float(numerator) / denominator
 
 sentences = [
     
     "The mixture of smoke and fog is called smog",
     "Smog is smoke and fog"
 ]
- 
-focus_sentence = "Smoke together with fog is called smog"
-
-for sentence in sentences:
-    print ("SymmetricSimilarity(\"%s\", \"%s\") = %s" % (
-        focus_sentence, sentence, symmetric_sentence_similarity(focus_sentence, sentence)))
- 
+sentence1 = "smoke together with fog is smog"
+focus_sentence = "smog and smoke is smog"
 
 
+print ("SymmetricSimilarity(\"%s\", \"%s\") = %s" % (
+        focus_sentence, sentence1, symmetric_sentence_similarity(focus_sentence, sentence1)))
+a = get_tuples_textblob_sentences(sentence1)
+b = get_tuples_textblob_sentences(focus_sentence)
+print("Jaccard: {}   Cosine: {}".format(jaccard_distance(a,b), cosine_similarity_ngrams(a,b)))
 
 
 
- ####################################################
+ #################################################### """
 
 
- 
-    
+import datetime
+y = datetime.datetime.utcnow()
+x = datetime.datetime.utcnow()+datetime.timedelta(hours=5.5)
+
+ts = x - y
+print(ts)
+

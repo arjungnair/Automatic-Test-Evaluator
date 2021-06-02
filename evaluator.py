@@ -1,4 +1,7 @@
-#from dandelion import DataTXT 
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from textblob import TextBlob, Word, Blobber
+""" #from dandelion import DataTXT 
 #import spacy
 import nltk
 from nltk.corpus import stopwords 
@@ -56,7 +59,7 @@ def preprocess(text):
 #by the no of keywords in the reference
 
 def penn_to_wn(tag):
-    """ Convert between a Penn Treebank tag to a simplified Wordnet tag """
+    Convert between a Penn Treebank tag to a simplified Wordnet tag
     if tag.startswith('N'):
         return 'n'
  
@@ -141,14 +144,41 @@ def cosine_sim(X,Y):
     for i in range(len(rvector)): 
             c+= l1[i]*l2[i] 
     cosine = c / float((sum(l1)*sum(l2))**0.5)
-    return(cosine) 
+    return(cosine)  """
+def sentence_polarity(text1, text2):
+    t1 = TextBlob(text1)
+    t2 = TextBlob(text2)
+    if t1.sentiment.polarity > 0 and t2.sentiment.polarity < 0:
+        polarity = abs(t1.sentiment.polarity - t2.sentiment.polarity)
+    elif t1.sentiment.polarity < 0 and t2.sentiment.polarity > 0:
+        polarity = abs(t1.sentiment.polarity - t2.sentiment.polarity)
+    else:
+        polarity = 0
+    polarity = polarity/2
+    if polarity >= 0.5:
+        polarity = 1
+    return polarity
 
 def evaluate(qapair):
-    question = qapair[1]
+
     studentAnswer = qapair[0]
     referenceAnswer = qapair[2]
-    #Evaluating sentence polarities
     polarity = sentence_polarity(referenceAnswer,studentAnswer)
+    sentences = []
+    sentences.append(studentAnswer)
+    sentences.append(referenceAnswer)
+
+    model_name = "bert-base-nli-mean-tokens"
+    model  = SentenceTransformer(model_name)
+
+    sentence_vecs = model.encode(sentences)
+    cosine =cosine_similarity(
+    [sentence_vecs[0]],
+    [sentence_vecs[1]]
+    )
+
+    #Evaluating sentence polarities
+    """ polarity = sentence_polarity(referenceAnswer,studentAnswer)
     #Removing words from answer that are in question
     qwlist = list(question.split(" "))
     for w in qwlist:
@@ -162,15 +192,23 @@ def evaluate(qapair):
    
     cosine = cosine_sim(X,Y)
     pos_sim = symmetric_sentence_similarity(referenceAnswer, studentAnswer)
-    score = (cosine + pos_sim)/2
+    score = pos_sim
 
     #if answer is correct check if the answer is a contradiction
+    
+    
+   
+    if cosine > 0.5:
+        score = pos_sim
+
     if score > 0.5:
         score = score - score*polarity
-    
-    if cosine < 0.2:
-        score = cosine
-
+    score = cosine """
+    score = cosine[0][0]
+    if score > 0.5:
+        score = score - score*polarity
+    if score < 0:
+        score = 0
     return(score)
 
 
