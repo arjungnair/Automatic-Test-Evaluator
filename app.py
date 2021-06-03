@@ -766,18 +766,24 @@ def view_answers():
         if request.method == "POST":
             if request.form.get('view'):
                 student_id = request.form.get('view')
-                app.logger.info(get_answers(student_id))
                 return render_template('display.html',edit = student_id,response = [get_answers(student_id)])
             if request.form.get("changescore"):
                 q = request.form.get("question")
-                student_id = int(request.form.get("stud_id"))
+                question = Question.query.filter_by(questionTitle = q).first()
+                qid = question.question_id
+                student_id = request.form.get("stud_id")
+                student_id = int(student_id)
+                index = request.form.get("index")
+                app.logger.info(index)
+                scorechange = "scorechange" + index
                 try:
-                    response = Response.query.filter_by(question = q,student_id = student_id,test_id = session['test']).first()
-                    response.pointsAwarded = int(request.form.get("scorechange"))
+                    response = Response.query.filter_by(question = qid,student_id = student_id,test_id = session['test_id']).first()
+                    marks = request.form.get(scorechange)
+                    response.pointsAwarded = int(marks)
                     db.session.commit()
                     return render_template('display.html',edit = student_id,response = [get_answers(student_id)])
-                except:
-                    return render_template('display.html',error = "Failed to edit score", edit = student_id,response = [get_answers(student_id)])
+                except Exception as e:
+                    return render_template('display.html',error = e, edit = student_id,response = [get_answers(student_id)])
                 
 @app.route('/signup',methods=['POST','GET'])   
 def signup(): 
